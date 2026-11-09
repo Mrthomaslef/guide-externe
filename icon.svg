@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#14B8A6"/>
+      <stop offset="50%" stop-color="#0D9488"/>
+      <stop offset="100%" stop-color="#0F172A"/>
+    </linearGradient>
+    <radialGradient id="morningGlow" cx="50%" cy="22%" r="72%">
+      <stop offset="0%" stop-color="#FDE68A" stop-opacity="0.45"/>
+      <stop offset="45%" stop-color="#5EEAD4" stop-opacity="0.18"/>
+      <stop offset="100%" stop-color="#0F172A" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="ringAccent" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FBBF24"/>
+      <stop offset="50%" stop-color="#2DD4BF"/>
+      <stop offset="100%" stop-color="#38BDF8"/>
+    </linearGradient>
+  </defs>
+  <rect width="256" height="256" rx="56" fill="url(#bgGrad)"/>
+  <rect width="256" height="256" rx="56" fill="url(#morningGlow)"/>
+  <rect x="7" y="7" width="242" height="242" rx="50" fill="none" stroke="#FFFFFF" stroke-opacity="0.22" stroke-width="4"/>
+  <circle cx="128" cy="128" r="103" fill="none" stroke="#FFFFFF" stroke-opacity="0.16" stroke-width="10"/>
+  <circle cx="128" cy="128" r="103" fill="none" stroke="url(#ringAccent)" stroke-width="10" stroke-linecap="round" stroke-dasharray="195 70 155 95" transform="rotate(-35 128 128)"/>
+  <circle cx="128" cy="128" r="92" fill="#071318" fill-opacity="0.82" stroke="#5EEAD4" stroke-opacity="0.42" stroke-width="3"/>
+  <path d="M98 76 A30 30 0 0 1 158 76" fill="none" stroke="#FBBF24" stroke-width="5" stroke-linecap="round"/>
+  <line x1="128" y1="36" x2="128" y2="41" stroke="#FBBF24" stroke-width="4.5" stroke-linecap="round"/>
+  <line x1="101" y1="45" x2="105" y2="50" stroke="#FBBF24" stroke-width="4.5" stroke-linecap="round"/>
+  <line x1="155" y1="45" x2="151" y2="50" stroke="#FBBF24" stroke-width="4.5" stroke-linecap="round"/>
+  <line x1="86" y1="76" x2="170" y2="76" stroke="#FBBF24" stroke-opacity="0.55" stroke-width="3" stroke-linecap="round"/>
+  <text x="128" y="114" text-anchor="middle" fill="#FFFFFF" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif" font-weight="800" font-size="31" letter-spacing="0.5">COCHIN</text>
+  <text x="128" y="175" text-anchor="middle" fill="#5EEAD4" font-family="-apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif" font-weight="900" font-size="68" letter-spacing="-1.5">EXT.</text>
+  <rect x="86" y="196" width="22" height="8" rx="4" fill="#FBBF24"/>
+  <rect x="117" y="196" width="22" height="8" rx="4" fill="#A78BFA"/>
+  <rect x="148" y="196" width="22" height="8" rx="4" fill="#2DD4BF"/>
+</svg>
