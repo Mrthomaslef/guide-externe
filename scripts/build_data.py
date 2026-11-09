@@ -110,6 +110,11 @@ def extract_schedule_engine() -> str:
 
 def main() -> None:
     raw = json.loads(SOURCE_JSON.read_text(encoding="utf-8"))
+    for ch in raw.get("chefs", []):
+        if ch.get("code") == "YANG":
+            ch["prenom"] = ""
+            ch["fullName"] = "Dr YANG"
+            ch["shortName"] = "Dr Yang"
     cloud = fetch_live_cloud_state()
 
     payload = {
