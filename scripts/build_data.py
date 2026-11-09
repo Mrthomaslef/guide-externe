@@ -112,9 +112,12 @@ def main() -> None:
     raw = json.loads(SOURCE_JSON.read_text(encoding="utf-8"))
     for ch in raw.get("chefs", []):
         if ch.get("code") == "YANG":
-            ch["prenom"] = ""
-            ch["fullName"] = "Dr YANG"
-            ch["shortName"] = "Dr Yang"
+            ch["prenom"] = "Sisi"
+            ch["fullName"] = "Dr Sisi YANG"
+            ch["shortName"] = "Dr S. Yang"
+    for pr in raw.get("presentations", []):
+        if pr.get("chefIntervenant") in ("Dr S. YANG", "Dr YANG"):
+            pr["chefIntervenant"] = "Dr Sisi YANG"
     cloud = fetch_live_cloud_state()
 
     payload = {
