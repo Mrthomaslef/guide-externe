@@ -23,15 +23,10 @@ LIVE_INTERNES_JSON_URL = "https://mrthomaslef.github.io/agenda-internes/internes
 
 
 def fetch_live_cloud_state() -> dict | None:
-    eval_code = f"""
-    var props = PropertiesService.getScriptProperties();
-    var raw = props.getProperty('{CLOUD_PROP_KEY}');
-    return {{ cloudState: raw ? JSON.parse(raw) : null }};
-    """
     try:
         req = urllib.request.Request(
             WEBHOOK_URL,
-            data=json.dumps({"eval_code": eval_code}).encode("utf-8"),
+            data=json.dumps({"action": "internes_read"}).encode("utf-8"),
             headers={"Content-Type": "text/plain;charset=utf-8"},
             method="POST",
         )
