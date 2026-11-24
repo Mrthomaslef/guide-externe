@@ -1436,7 +1436,6 @@
         const canPrev = allDates.length > 0 && addDaysIso(prevMon, 4) >= allDates[0];
         const canNext = allDates.length > 0 && nextMon <= allDates[allDates.length - 1];
 
-        const showTodayBtn = selectedDateIso !== todayIso;
 
         const dayPillsHtml = weekDays.map((dIso, idx) => {
           const dt = parseIso(dIso);
@@ -1515,7 +1514,6 @@
             <button type="button" class="nav-arrow" ${canPrev ? "" : "disabled"} onclick="shiftWeek(-1)" aria-label="Semaine précédente">‹</button>
             <div class="week-center">
               <span class="week-label">Semaine du ${escapeHtml(formatWeekRangeFr(monIso))}</span>
-              ${showTodayBtn ? `<button type="button" class="today-pill" onclick="goToday()">Aujourd'hui</button>` : ""}
             </div>
             <button type="button" class="nav-arrow" ${canNext ? "" : "disabled"} onclick="shiftWeek(1)" aria-label="Semaine suivante">›</button>
           </div>
@@ -1565,7 +1563,6 @@
             <article class="mardi-row-card cours-row is-dated ${isNext ? 'is-next' : ''} ${isPast ? 'is-past' : ''}" onclick="openTuesdayInMatin('${c.date}')">
               <div class="mrc-top">
                 <div class="mrc-date">${escapeHtml(formatDayFullFr(c.date))}${c.heure ? " · " + escapeHtml(c.heure) : ""}</div>
-                ${isNext ? `<span class="mrc-tag">${c.date === todayIso ? "Aujourd'hui" : "Prochain cours"}</span>` : ""}
               </div>
               <div class="mrc-cell">
                 <div class="mrc-val">${escapeHtml(c.sujet)}</div>
@@ -1624,13 +1621,11 @@
             `;
           }
 
-          const tagLabel = item.date === todayIso ? "Aujourd'hui" : "Prochain mardi";
 
           return `
             <article class="mardi-row-card ${isNext ? 'is-next' : ''} ${isPast ? 'is-past' : ''}" onclick="openTuesdayInMatin('${item.date}')">
               <div class="mrc-top">
                 <div class="mrc-date">${escapeHtml(formatDayFullFr(item.date))}</div>
-                ${isNext ? `<span class="mrc-tag">${tagLabel}</span>` : ""}
               </div>
               <div class="mrc-grid">
                 <div class="mrc-cell">
