@@ -798,6 +798,87 @@
     }
     .mardi-row-card.cours-row { cursor: default; }
     .mardi-row-card.cours-row.is-dated { cursor: pointer; }
+    /* Bandeau « Prochain cours » visible sur toutes les vues */
+    .cours-banner {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      background: linear-gradient(135deg, #0369A1 0%, #0EA5E9 100%);
+      color: #FFFFFF;
+      border-radius: 16px;
+      padding: 13px 14px;
+      margin-bottom: 12px;
+      box-shadow: 0 6px 18px rgba(2, 132, 199, 0.28);
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    .cours-banner.is-today {
+      background: linear-gradient(135deg, #B45309 0%, #F59E0B 100%);
+      box-shadow: 0 6px 18px rgba(217, 119, 6, 0.32);
+    }
+    .cb-date {
+      flex: 0 0 auto;
+      width: 54px;
+      text-align: center;
+      background: rgba(255, 255, 255, 0.18);
+      border-radius: 12px;
+      padding: 6px 0;
+      line-height: 1.1;
+    }
+    .cb-date-day { font-size: 22px; font-weight: 900; }
+    .cb-date-month { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; }
+    .cb-body { flex: 1 1 auto; min-width: 0; }
+    .cb-kicker {
+      font-size: 10.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      opacity: 0.92;
+    }
+    .cb-title { font-size: 16px; font-weight: 800; margin-top: 1px; }
+    .cb-meta { font-size: 12.5px; opacity: 0.95; margin-top: 2px; }
+    .cb-cal {
+      flex: 0 0 auto;
+      border: none;
+      background: #FFFFFF;
+      color: #0369A1;
+      font-weight: 800;
+      font-size: 12.5px;
+      border-radius: 10px;
+      padding: 8px 10px;
+      cursor: pointer;
+      touch-action: manipulation;
+      white-space: nowrap;
+    }
+    .cours-banner.is-today .cb-cal { color: #B45309; }
+    @media (max-width: 420px) {
+      .cours-banner { flex-wrap: wrap; }
+      .cb-cal { width: 100%; }
+    }
+    .cours-cal-btn {
+      margin-top: 8px;
+      border: 1px solid var(--mardi-accent);
+      background: transparent;
+      color: var(--mardi-accent);
+      font-weight: 700;
+      font-size: 12.5px;
+      border-radius: 9px;
+      padding: 6px 10px;
+      cursor: pointer;
+      touch-action: manipulation;
+    }
+    .view-tab.tab-cours { position: relative; }
+    .view-tab.tab-cours .tab-dot {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #F59E0B;
+      margin-left: 5px;
+      vertical-align: middle;
+    }
+
     .cours-day-card {
       background: var(--bg-card);
       border: 1.5px solid var(--mardi-accent);
@@ -836,7 +917,7 @@
     <nav class="view-tabs" aria-label="Navigation">
       <button type="button" class="view-tab active" id="tabMatinBtn" onclick="setActiveTab('matin')">Vacations du matin</button>
       <button type="button" class="view-tab" id="tabMardisBtn" onclick="setActiveTab('mardis')">Tous les mardis</button>
-      <button type="button" class="view-tab" id="tabCoursBtn" onclick="setActiveTab('cours')">Cours externes</button>
+      <button type="button" class="view-tab tab-cours" id="tabCoursBtn" onclick="setActiveTab('cours')">📚 Cours<span class="tab-dot" aria-hidden="true"></span></button>
     </nav>
 
     <div id="appContent"></div>
@@ -979,6 +1060,84 @@
         { date: "", heure: "", sujet: "Tumeurs osseuses", intervenant: "Pr Antoine FEYDY" }
       ];
       const COURS_LIEU = "Salle de réunion Albarran -1";
+
+      function getNextCours() {
+        const todayIso = toIso(new Date());
+        return COURS_EXTERNES.filter(c => c.date && c.date >= todayIso).sort((a, b) => a.date.localeCompare(b.date))[0] || null;
+      }
+
+      function daysUntil(iso) {
+        const a = parseIso(toIso(new Date()));
+        const b = parseIso(iso);
+        return Math.round((b - a) / 86400000);
+      }
+
+      function countdownLabel(iso) {
+        const n = daysUntil(iso);
+        if (n <= 0) return "Aujourd'hui";
+        if (n === 1) return "Demain";
+        return "Dans " + n + " jours";
+      }
+
+      function renderCoursBannerHtml() {
+        const c = getNextCours();
+        if (!c) return "";
+        const dt = parseIso(c.date);
+        const isToday = daysUntil(c.date) <= 0;
+        const idx = COURS_EXTERNES.indexOf(c);
+        return `
+          <section class="cours-banner ${isToday ? 'is-today' : ''}" onclick="setActiveTab('cours')" role="button" aria-label="Voir le planning des cours">
+            <div class="cb-date">
+              <div class="cb-date-day">${dt.getDate()}</div>
+              <div class="cb-date-month">${escapeHtml(MONTHS_SHORT[dt.getMonth()])}</div>
+            </div>
+            <div class="cb-body">
+              <div class="cb-kicker">📚 Prochain cours externes · ${escapeHtml(countdownLabel(c.date))}</div>
+              <div class="cb-title">${escapeHtml(c.sujet)}</div>
+              <div class="cb-meta">${escapeHtml(formatDayFullFr(c.date))}${c.heure ? " · " + escapeHtml(c.heure) : ""}${c.intervenant ? " · " + escapeHtml(c.intervenant) : ""}</div>
+              <div class="cb-meta">📍 ${escapeHtml(COURS_LIEU)}</div>
+            </div>
+            ${c.heure ? `<button type="button" class="cb-cal" onclick="event.stopPropagation();addCoursToCalendar(${idx})">📅 Ajouter à mon agenda</button>` : ""}
+          </section>
+        `;
+      }
+
+      function icsEscape(t) {
+        return String(t || "").replace(/\\/g, "\\\\").replace(/;/g, "\\;").replace(/,/g, "\\,").replace(/\n/g, "\\n");
+      }
+
+      window.addCoursToCalendar = function (idx) {
+        const c = COURS_EXTERNES[idx];
+        if (!c || !c.date) return;
+        const m = /^(\d{1,2})h(\d{2})?/.exec(c.heure || "");
+        const hh = m ? m[1].padStart(2, "0") : "09";
+        const mm = m && m[2] ? m[2] : "00";
+        const d = c.date.replace(/-/g, "");
+        const endH = String(Math.min(23, Number(hh) + 1)).padStart(2, "0");
+        const ics = [
+          "BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Radio B Cochin//Cours externes//FR", "CALSCALE:GREGORIAN",
+          "BEGIN:VEVENT",
+          "UID:cours-externes-" + d + "-" + idx + "@radiob-cochin",
+          "DTSTAMP:" + new Date().toISOString().replace(/[-:]/g, "").replace(/\.\d{3}/, ""),
+          "DTSTART;TZID=Europe/Paris:" + d + "T" + hh + mm + "00",
+          "DTEND;TZID=Europe/Paris:" + d + "T" + endH + mm + "00",
+          "SUMMARY:" + icsEscape("Cours externes Radio B — " + c.sujet),
+          "LOCATION:" + icsEscape(COURS_LIEU + ", Hôpital Cochin"),
+          "DESCRIPTION:" + icsEscape((c.intervenant ? c.intervenant + " — " : "") + "Présence attendue de tous les externes."),
+          "BEGIN:VALARM", "TRIGGER:-P1D", "ACTION:DISPLAY", "DESCRIPTION:Cours externes demain", "END:VALARM",
+          "BEGIN:VALARM", "TRIGGER:-PT30M", "ACTION:DISPLAY", "DESCRIPTION:Cours externes dans 30 min", "END:VALARM",
+          "END:VEVENT", "END:VCALENDAR"
+        ].join("\r\n");
+        const blob = new Blob([ics], { type: "text/calendar;charset=utf-8" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = "cours-externes-" + c.date + ".ics";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 4000);
+      };
       let selectedDateIso = "";
 
       function escapeHtml(str) {
@@ -1412,6 +1571,7 @@
                 <div class="mrc-val">${escapeHtml(c.sujet)}</div>
                 ${c.intervenant ? `<div class="mrc-senior">${escapeHtml(c.intervenant)}</div>` : ""}
               </div>
+              ${(!isPast && c.heure) ? `<button type="button" class="cours-cal-btn" onclick="event.stopPropagation();addCoursToCalendar(${COURS_EXTERNES.indexOf(c)})">📅 Ajouter à mon agenda</button>` : ""}
             </article>
           `;
         }).join("");
@@ -1425,7 +1585,7 @@
           </article>
         `).join("");
         return `
-          <p class="cours-intro">📍 ${escapeHtml(COURS_LIEU)} · Stage du 23 novembre 2026 au 21 février 2027</p>
+          <p class="cours-intro"><strong>Présence attendue de tous les externes à chaque cours.</strong><br>📍 ${escapeHtml(COURS_LIEU)} · Stage du 23 novembre 2026 au 21 février 2027</p>
           <div class="mardis-list">${datedHtml}${undatedHtml}</div>
         `;
       }
@@ -1497,7 +1657,8 @@
         document.getElementById("tabMatinBtn").classList.toggle("active", activeTab === "matin");
         document.getElementById("tabMardisBtn").classList.toggle("active", activeTab === "mardis");
         document.getElementById("tabCoursBtn").classList.toggle("active", activeTab === "cours");
-        container.innerHTML = activeTab === "matin" ? renderMatinTab() : (activeTab === "cours" ? renderCoursTab() : renderMardisTab());
+        const bannerHtml = activeTab === "cours" ? "" : renderCoursBannerHtml();
+        container.innerHTML = bannerHtml + (activeTab === "matin" ? renderMatinTab() : (activeTab === "cours" ? renderCoursTab() : renderMardisTab()));
       }
 
       function updateThemeButton() {
