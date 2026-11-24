@@ -254,10 +254,10 @@
       padding: 12px 14px calc(var(--safe-bottom) + 32px);
     }
 
-    /* Onglets principaux (2 vues uniquement) */
+    /* Onglets principaux (3 vues) */
     .view-tabs {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: repeat(3, 1fr);
       gap: 6px;
       background: var(--bg-elevated);
       padding: 4px;
@@ -276,6 +276,10 @@
       border-radius: 9px;
       cursor: pointer;
       transition: background 0.15s ease, color 0.15s ease;
+    }
+
+    @media (max-width: 420px) {
+      .view-tab { font-size: 12.5px; padding: 8px 4px; line-height: 1.2; }
     }
 
     .view-tab.active {
@@ -775,6 +779,32 @@
       margin-top: 2px;
       font-weight: 500;
     }
+
+    /* Onglet 3 : Cours des externes */
+    .cours-intro {
+      font-size: 12.5px;
+      color: var(--text-secondary);
+      margin: 0 2px 10px;
+    }
+    .cours-badge {
+      font-size: 11px;
+      font-weight: 800;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: var(--bg-subtle);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      white-space: nowrap;
+    }
+    .mardi-row-card.cours-row { cursor: default; }
+    .mardi-row-card.cours-row.is-dated { cursor: pointer; }
+    .cours-day-card {
+      background: var(--bg-card);
+      border: 1.5px solid var(--mardi-accent);
+      border-radius: 14px;
+      padding: 12px 14px;
+      margin-bottom: 10px;
+    }
   </style>
 </head>
 <body>
@@ -794,7 +824,7 @@
           <div class="brand-title">Externes Radio B</div>
           <div class="brand-sub">
             <span class="sync-dot" id="syncDot"></span>
-            <span id="headerSubText">Hôpital Cochin · Matin &amp; Mardi</span>
+            <span id="headerSubText">Hôpital Cochin · Matin, Mardi &amp; Cours</span>
           </div>
         </div>
       </div>
@@ -806,6 +836,7 @@
     <nav class="view-tabs" aria-label="Navigation">
       <button type="button" class="view-tab active" id="tabMatinBtn" onclick="setActiveTab('matin')">Vacations du matin</button>
       <button type="button" class="view-tab" id="tabMardisBtn" onclick="setActiveTab('mardis')">Tous les mardis</button>
+      <button type="button" class="view-tab" id="tabCoursBtn" onclick="setActiveTab('cours')">Cours externes</button>
     </nav>
 
     <div id="appContent"></div>
@@ -935,6 +966,19 @@
       let BASE_DATA = window.EXTERNES_EMBEDDED_DATA || null;
       let STATE = null;
       let activeTab = "matin";
+
+      /* Cours des externes — tableau officiel du secrétariat (Anne-Marie FORTIN-COZIC, 16/11/2026)
+         + dates confirmées par les seniors par mail. Groupe du 23/11/2026 au 21/02/2027. */
+      const COURS_EXTERNES = [
+        { date: "2026-11-23", heure: "",    sujet: "Accueil des externes", intervenant: "Secrétariat" },
+        { date: "2026-12-15", heure: "11h", sujet: "La cheville traumatique", intervenant: "Dr Amandine LAPORTE" },
+        { date: "", heure: "", sujet: "Radiologie interventionnelle", intervenant: "Dr Marie-Pauline TALABARD" },
+        { date: "", heure: "", sujet: "Traumatologie", intervenant: "Pr Antoine FEYDY" },
+        { date: "", heure: "", sujet: "Fractures", intervenant: "Dr Marie-Pauline TALABARD" },
+        { date: "", heure: "", sujet: "Rachis dégénératif", intervenant: "Dr Marie-Pauline TALABARD" },
+        { date: "", heure: "", sujet: "Tumeurs osseuses", intervenant: "Pr Antoine FEYDY" }
+      ];
+      const COURS_LIEU = "Salle de réunion Albarran -1";
       let selectedDateIso = "";
 
       function escapeHtml(str) {
@@ -1329,9 +1373,60 @@
             </section>
 
             <div class="mardi-side">
+              ${renderCoursDuJourHtml(selectedDateIso)}
               ${mardiCardHtml}
             </div>
           </div>
+        `;
+      }
+
+      function renderCoursDuJourHtml(iso) {
+        const items = COURS_EXTERNES.filter(c => c.date === iso);
+        if (!items.length) return "";
+        return items.map(c => `
+          <section class="cours-day-card">
+            <div class="mrc-label">Cours externes${c.heure ? " · " + escapeHtml(c.heure) : ""}</div>
+            <div class="mrc-val">${escapeHtml(c.sujet)}</div>
+            ${c.intervenant ? `<div class="mrc-senior">${escapeHtml(c.intervenant)}</div>` : ""}
+            <div class="mrc-senior">${escapeHtml(COURS_LIEU)}</div>
+          </section>
+        `).join("");
+      }
+
+      function renderCoursTab() {
+        const todayIso = toIso(new Date());
+        const dated = COURS_EXTERNES.filter(c => c.date).sort((a, b) => a.date.localeCompare(b.date));
+        const undated = COURS_EXTERNES.filter(c => !c.date);
+        let nextMarked = false;
+        const datedHtml = dated.map(c => {
+          const isPast = c.date < todayIso;
+          let isNext = false;
+          if (!isPast && !nextMarked) { isNext = true; nextMarked = true; }
+          return `
+            <article class="mardi-row-card cours-row is-dated ${isNext ? 'is-next' : ''} ${isPast ? 'is-past' : ''}" onclick="openTuesdayInMatin('${c.date}')">
+              <div class="mrc-top">
+                <div class="mrc-date">${escapeHtml(formatDayFullFr(c.date))}${c.heure ? " · " + escapeHtml(c.heure) : ""}</div>
+                ${isNext ? `<span class="mrc-tag">${c.date === todayIso ? "Aujourd'hui" : "Prochain cours"}</span>` : ""}
+              </div>
+              <div class="mrc-cell">
+                <div class="mrc-val">${escapeHtml(c.sujet)}</div>
+                ${c.intervenant ? `<div class="mrc-senior">${escapeHtml(c.intervenant)}</div>` : ""}
+              </div>
+            </article>
+          `;
+        }).join("");
+        const undatedHtml = undated.map(c => `
+          <article class="mardi-row-card cours-row">
+            <div class="mrc-top">
+              <div class="mrc-date">${escapeHtml(c.sujet)}</div>
+              <span class="cours-badge">Date à venir</span>
+            </div>
+            <div class="mrc-senior">${escapeHtml(c.intervenant || "Intervenant à confirmer")}</div>
+          </article>
+        `).join("");
+        return `
+          <p class="cours-intro">📍 ${escapeHtml(COURS_LIEU)} · Stage du 23 novembre 2026 au 21 février 2027</p>
+          <div class="mardis-list">${datedHtml}${undatedHtml}</div>
         `;
       }
 
@@ -1401,7 +1496,8 @@
         if (!container) return;
         document.getElementById("tabMatinBtn").classList.toggle("active", activeTab === "matin");
         document.getElementById("tabMardisBtn").classList.toggle("active", activeTab === "mardis");
-        container.innerHTML = activeTab === "matin" ? renderMatinTab() : renderMardisTab();
+        document.getElementById("tabCoursBtn").classList.toggle("active", activeTab === "cours");
+        container.innerHTML = activeTab === "matin" ? renderMatinTab() : (activeTab === "cours" ? renderCoursTab() : renderMardisTab());
       }
 
       function updateThemeButton() {
@@ -1425,9 +1521,9 @@
       };
 
       window.setActiveTab = function (tab) {
-        activeTab = tab === "mardis" ? "mardis" : "matin";
+        activeTab = (tab === "mardis" || tab === "cours") ? tab : "matin";
         renderApp();
-        if (activeTab === "mardis") {
+        if (activeTab !== "matin") {
           requestAnimationFrame(() => {
             const nextEl = document.querySelector(".mardi-row-card.is-next");
             if (nextEl) nextEl.scrollIntoView({ behavior: "smooth", block: "center" });
