@@ -103,10 +103,13 @@
       line-height: 1.42;
       min-height: 100dvh;
       overflow-x: hidden;
-      overflow-y: auto;
-      overscroll-behavior-y: contain;
       touch-action: manipulation;
       -webkit-text-size-adjust: 100%;
+    }
+
+    /* Anti-rebond seulement au tactile : le scroll trackpad du Mac reste libre */
+    @media (hover: none) and (pointer: coarse) {
+      html, body { overscroll-behavior-y: contain; }
     }
 
     button, a {
